@@ -96,6 +96,13 @@ tf.grep('config.ini', '\[\w*\]', numbers = True)
 
 #### sed()
 
+```
+  sed(filename, pattern, bak_ext="bak")
+  in:  filename       the file to edit
+       pattern        a sed pattern, involving one of "aidsxX"
+       bak_ext        the extension to use when creating the file backup (without the dot)
+```
+
 The *sed* function is an inline file editor, based on `sed` from the Unix world. When invoked, it first renames the source file to have a `.bak` extension. That file is opened and each line of the source file is loaded in, and a regex pattern match is performed. If the line is changed/found/inserted, then the output is streamed to the new (output) file with the same name as the original; it appears to the user that the files is edited-in-place, with a .bak file created. 
 
 This version of `sed` has 6 commands:
@@ -112,10 +119,12 @@ If the single-letter command is preceded by a number or number-range, then the e
 ##### Examples
 
 ```
-12aMAX_FILE_NAME=255
-12iDEFAULT_DIR = "/"
-43-45d
-1,20s/^#\s*//
+12aMAX_FILE_NAME=255             insert a line AFTER line 12
+12iDEFAULT_DIR = "/"             insert a line BEFORE line 12
+43-45d                           delete lines 43, 44 and 45
+1,20s/^#\s*/##  /                only in lines 1 through 20, replace lines that 
+                                 start with a # followed by whitespace
+                                 with two-# and two-spaces....to align some comments
 ```
 
 The x/X patterns are wrapped in a pair of delimiter characters, typically /, although any other character is allowed (except space). Valid X commands are:
@@ -201,11 +210,14 @@ In its present form, the module has these limitations:
 * search patterns involving \ escapes may or may not work properly
 * the esp8266 implementation does not allow \1,\2 type pattern substitution
 * in the simple shell
-  * filenames must not have spaces
-  * patterns with spaces ***must*** be quoted
-  * the target of `cp`and `mv` *cannot* be a simple a directory-name as in Linux; write the whole filename *w.r.t,* the current directory
+    * filenames must not have spaces
+    * patterns with spaces ***must*** be quoted
+    * the target of `cp`and `mv` *cannot* be a simple a directory-name as in Linux; write the whole filename *w.r.t,* the current directory
 * the complexity of pattern matching is limited. 
-  * try to format the grep patterns so they avoid deep stack recursion. For example, '([^#]|\\#)\*' has a very generous search term as the first half, and can cause deep-stack recursion. The equivalent '(\\#|[^#]\*)' is more likely to succeed.
+    * try to format the grep patterns so they avoid deep stack recursion. For example, '([^#]|\\#)\*' has a very generous search term as the first half, and can cause deep-stack recursion. The equivalent '(\\#|[^#]\*)' is more likely to succeed.
+* with sed-search-and-replace, the parsed line *includes* the terminal \n, so if you replace the text all the way to the end of the line, you will delete the terminal \n and this line will merge with the subsequent line
+    * if the replacement is '', the line will appear to vanish, e.g. `s/^#.*//`  will delete comment lines
+    * pattern matching to \n and \r does not work
 
 ## Examples
 
