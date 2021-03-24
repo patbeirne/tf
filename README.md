@@ -101,6 +101,7 @@ tf.grep('config.ini', '\[\w*\]', numbers = True)
   in:  filename       the file to edit
        pattern        a sed pattern, involving one of "aidsxX"
        bak_ext        the extension to use when creating the file backup (without the dot)
+  return: tuple(number of lines in the input file, number of lines modified/added/deleted/matched)
 ```
 
 The *sed* function is an inline file editor, based on `sed` from the Unix world. When invoked, it first renames the source file to have a `.bak` extension. That file is opened and each line of the source file is loaded in, and a regex pattern match is performed. If the line is changed/found/inserted, then the output is streamed to the new (output) file with the same name as the original; it appears to the user that the files is edited-in-place, with a .bak file created. 
