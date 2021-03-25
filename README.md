@@ -17,7 +17,36 @@ For example, to make a backup, you can call
 or you can use the builtin command line and
 
 ```
-    cp log.txt log.2021-03-20.bak
+/$ cp m.log.bak mail.log
+/$ dir
+-rwx all       230 boot.py
+-rwx all      2886 m.log.bak
+-rwx all      2886 mail.log
+-rwx all      2401 main.py
+-rwx all      2259 main_test.py
+-rwx all     99182 mqtt.log
+-rwx all      6949 tf.py
+-rwx all        15 webrepl_cfg.py
+disk size:     392 KB   disk free: 196 KB
+/$ cat -n -l 1000-1005 mqtt.log
+====mqtt.log=====
+1000 1616120701: Client mosq-d911rjWHX3Rdwcntoo disconnected.
+1001 1616124181: New connection from 72.53.209.21 on port 1883.
+1002 1616124181: New client connected from 72.53.209.21 as mosq-kwcmiGmZ7jlEVRecrU (c1, k60).
+1003 1616124181: Client mosq-kwcmiGmZ7jlEVRecrU disconnected.
+1004 1616126374: Socket error on client DVES_98843E, disconnecting.
+1005 1616126425: Client DVES_83244E has exceeded timeout, disconnecting.
+
+/$ sed x/24\.114\.80/ mqtt.log
+Lines processed: 1415  Lines modifed: 4
+/$ cat -n mqtt.log
+====mqtt.log=====
+1 1616120273: New connection from 24.114.80.91 on port 1883.
+2 1616120273: New client connected from 24.114.80.91 as Rutherford1616120233590 (c1, k60, u'patb').
+3 1616142039: New connection from 24.114.80.109 on port 1883.
+4 1616142039: New client connected from 24.114.80.109 as Rutherford1616120233590 (c1, k60, u'patb').
+
+/$ 
 ```
 
 The first half of the **TF** module holds the functions. These may come in handy for parsing files, making backups or searching through files. 
