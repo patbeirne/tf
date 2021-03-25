@@ -133,7 +133,7 @@ def _dir(d=''):
   except:
     print("not a valid directory")
   s=os.statvfs('/')
-  print("disk size:{:8d} KB   disk free: {} KB".format(s[0]*s[2]//1024,s[0]*s[3]//1024))
+  print("disk size:{:8d} KB   disk free: {} KB\n".format(s[0]*s[2]//1024,s[0]*s[3]//1024))
 
 
 '''-----cut here if you only need the above functions-----'''

@@ -28,6 +28,7 @@ or you can use the builtin command line and
 -rwx all      6949 tf.py
 -rwx all        15 webrepl_cfg.py
 disk size:     392 KB   disk free: 196 KB
+
 /$ cat -n -l 1000-1005 mqtt.log
 ====mqtt.log=====
 1000 1616120701: Client mosq-d911rjWHX3Rdwcntoo disconnected.
@@ -37,14 +38,11 @@ disk size:     392 KB   disk free: 196 KB
 1004 1616126374: Socket error on client DVES_98843E, disconnecting.
 1005 1616126425: Client DVES_83244E has exceeded timeout, disconnecting.
 
-/$ sed x/24\.114\.80/ mqtt.log
-Lines processed: 1415  Lines modifed: 4
-/$ cat -n mqtt.log
-====mqtt.log=====
-1 1616120273: New connection from 24.114.80.91 on port 1883.
-2 1616120273: New client connected from 24.114.80.91 as Rutherford1616120233590 (c1, k60, u'patb').
-3 1616142039: New connection from 24.114.80.109 on port 1883.
-4 1616142039: New client connected from 24.114.80.109 as Rutherford1616120233590 (c1, k60, u'patb').
+/$ grep 24.114.80.\d+ mqtt.log
+977 1616120273: New connection from 24.114.80.91 on port 1883.
+980 1616120273: New client connected from 24.114.80.91 as Rutherford1616120233590 (c1, k60, u'patb').
+1046 1616142039: New connection from 24.114.80.109 on port 1883.
+1049 1616142039: New client connected from 24.114.80.109 as Rutherford1616120233590 (c1, k60, u'patb').
 
 /$ 
 ```
