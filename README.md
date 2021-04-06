@@ -2,6 +2,8 @@
 
 A module for manipulating files in the *MicroPython* environment.  
 
+[TOC]
+
 ## Oveview
 
 I discovered *MicroPython* when working on the ESP8266 processor. Everything seemed very nice, except it was awkward moving files around. All the methods I could find required a back-and-forth with the programmer's desktop.
@@ -69,7 +71,9 @@ tf.cp('log.txt','log.bak')`
    returns: Null
 ```
 
-Simply copies a source file to a destination file. Filenames may include folders or . or .. prefixes. The destination is overwritten if it exists. This function reads-&-writes one line at a time, so it can handle megabyte files. Typical speeds are 100kB/sec on an ESP8266.
+Simply copies a source file to a destination file. Filenames may include folders or . or .. prefixes. The destination is overwritten if it exists. This function reads-&-writes one line at a time, so it can handle megabyte files. Typical speeds are 100kB/sec on an ESP8266. 
+
+**NOTE** this function *only works on text files*. Line lengths of up to 4096 work fine on the ESP8266.
 
 #### cat()
 
@@ -124,7 +128,7 @@ tf.grep('config.ini', '\[\w*\]', numbers = True)
 #### sed()
 
 ```
-  sed(filename, pattern, bak_ext="bak")
+  sed(filename, pattern, bak_ext=".bak")
   in:  filename       the file to edit
        pattern        a sed pattern, involving one of "aidsxX"
        bak_ext        the extension to use when creating the file backup (without the dot)
@@ -172,7 +176,9 @@ s/thier/their/
 s@ratio\s*=\s*num/denom@ratio = num/denom if denom else 0@
 ```
 
-**Note**: you will need some free space on your disk, the same size as the source file, as a backup file is *always* made. To edit an 800k file, you should have 800k of free space.
+**Note**: The function version of sed() can have embedded space characters in the pattern; the command line version (below) requires single-quotes around patterns that have space characters.
+
+**Note**: You will need some free space on your disk, the same size as the source file, as a backup file is *always* made. To edit an 800k file, you should have 800k of free space.
 
 **Note**: The functions for
 
@@ -224,7 +230,7 @@ grep '^\s*#define\s+[A-Z]' main.c
 sed 1,100s/recieve/receive/ doc.txt
 sed '33-$s/it is/it\'s/' doc.txt
 sed '45i   a new line of indented text' doc.txt
-```    
+```
 
 The **REPL** typing-history is functional, so you can use the up-arrow to recall the last 4-5 commands. Use the left-arrow and backspace to correct lines that have errors.
 
@@ -235,17 +241,18 @@ Commands with invalid syntax return a line of information, and are ignored. Non 
 In its present form, the module has these limitations:  
 
 * filenames are limited to 255 chars
-* search patterns involving \ escapes may or may not work properly
-* the esp8266 implementation does not allow \1,\2 type pattern substitution
+* files must be text
+	* or have a `\n` at least every 4096 characters
+	* `sed()` requires lines <=2048 characters, and this `sed()` won't match binary chars
+* search patterns involving \ escapes other than `\'` probably won't work
 * in the simple shell
-    * filenames must not have spaces
-    * patterns with spaces ***must*** be quoted
-    * the target of `cp`and `mv` *cannot* be a simple a directory-name as in Linux; write the whole filename *w.r.t,* the current directory
+  * filenames must not have spaces
+  * patterns with spaces ***must*** be quoted
+  * the target of `cp`and `mv` *cannot* be a simple a directory-name as in Linux; write the whole filename *w.r.t,* the current directory
 * the complexity of pattern matching is limited. 
-    * try to format the grep patterns so they avoid deep stack recursion. For example, '([^#]|\\#)\*' has a very generous search term as the first half, and can cause deep-stack recursion. The equivalent '(\\#|[^#]\*)' is more likely to succeed.
-* with sed-search-and-replace, the parsed line *includes* the terminal \n, so if you replace the text all the way to the end of the line, you will delete the terminal \n and this line will merge with the subsequent line
-    * if the replacement is '', the line will appear to vanish, e.g. `s/^#.*//`  will delete comment lines
-    * pattern matching to \n and \r does not work
+  * try to format the grep patterns so they avoid deep stack recursion. For example, '([^#]|\\#)\*' has a very generous search term as the first half, and can cause deep-stack recursion. The equivalent '(\\#|[^#]\*)' is more likely to succeed.
+* with sed, lines are parsed and saved one-line-at-a-time, so pattern matching to \n and \r does not work
+* this simple shell is different than [mpfshell](https://github.com/wendlers/mpfshell) in that this shell runs entirely on the target device. There is no allowance in this shell for transferring files in/out of the target.
 
 ## Examples
 
@@ -276,14 +283,16 @@ Search a log file for an incident
 [command line]
    grep [Ee]rror log.txt
    grep '2021-02-12 16:\d\d' log.txt
-   [search and keep a record ]
+   # search and keep a record
    cp log.txt log.details
    sed 'x/2021-02-12 16:\d\d` log.details
 ```
 
 ## Installation
 
-Move the 'tf.py' file over to the target. You can use `webrepl` [command line program](https://github.com/micropython/webrepl)  or the **WEBREPL** [web page](https://micropython.org/webrepl/) .
+~If you need help with getting connected to your MicroPython board, there are excellent howto guides here and here~ TODO! 
+
+Move the 'tf.py' file over to the target. You can use `webrepl` [command line program](https://github.com/micropython/webrepl)  or the **WEBREPL** [web page](http://micropython.org/webrepl/) .  If you want the command line extensions, then send over the `tf_extend.py` file as well
 
 Once the module is present in the file system of the target, you can use the **REPL** command line interface to invoke it
 
@@ -315,11 +324,29 @@ This is the *simple command line*. You can type `dir` to get an idea of what's a
  /test_dir$ 
 ```
 
-If you don't need the *simple command line*, you can still use the methods listed above. Feel free to cut the `tf.py` module in half by deleting everything below the line
+If you don't need the *simple command line*, you can still use the methods listed at the top of this readme. Feel free to cut the `tf.py` module in half by deleting everything below the line
 
 ```
-    def help():
+  def ext_cmd(a):
 ```
+
+## Extensions
+
+I found the simple command line so useful, I added some extra non-file-related functions. These are included in the optional filr `tf_extend.py'.  the available command list is extended to include
+
+```
+scan                      # scan and show the local AP's
+connect essid password    # create a persistent wifi connection
+ifconfig                  # show current ip address
+host <domain.name>        # do an DNS lookup
+freq [160 | 80]           # get/set the ESP8266 frequency
+exec <python-filename>    # execute a small python file
+free                      # display the heap size: used + free
+```
+
+The `tf.py` module checks to see if the `tf_extend.py` files exists, and forwards unknown commands to it. The `help` system also extends when the extension file exists.
+
+Installing the extensions module uses about 2k of flash/disk space and 2kB of heap ram.
 
 ## Performance
 
