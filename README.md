@@ -1,6 +1,6 @@
 # TF
 
-A module for manipulating files in the *MicroPython* environment.  
+A module for manipulating **T**ext **F**iles in the *MicroPython* environment.  
 
 [TOC]
 
@@ -8,8 +8,8 @@ A module for manipulating files in the *MicroPython* environment.
 
 I discovered *MicroPython* when working on the ESP8266 processor. Everything seemed very nice, except it was awkward moving files around. All the methods I could find required a back-and-forth with the programmer's desktop.
 
-This **TF** module includes functions for creating, searching, editing and making backups of local files, using only the embedded processor. The module itself is small (about 7k) and can be downloaded into the target machine. Once there, the user can invoke it by either calling functions, or using the builtin command line. 
-
+This **TF** module includes functions for creating, searching, editing and making backups of local text files, using only the embedded processor. The module itself is small (about 7k) and can be downloaded into the target machine. Once there, the user can invoke it by either calling functions, or using the builtin command line. 
+```
 For example, to make a backup, you can call  
 
 ```
@@ -19,7 +19,7 @@ For example, to make a backup, you can call
 or you can use the builtin command line and
 
 ```
-/$ cp m.log.bak mail.log
+/$ cp mail.log m.log.bak
 /$ dir
 -rwx all       230 boot.py
 -rwx all      2886 m.log.bak
@@ -49,9 +49,9 @@ disk size:     392 KB   disk free: 196 KB
 /$ 
 ```
 
-The first half of the **TF** module holds the functions. These may come in handy for parsing files, making backups or searching through files. 
+The first half of the **TF** module holds the functions. With these you can  parse or search files, or make backups. 
 
-The second half contains the simple command shell. This may come in handy for testing the functions, experimenting with their functions, or if you, like me, like to play around with a live system. If you don't need the shell, just delete everything from `def _help():` downward.
+The second half contains the simple command shell. This may come in handy for testing the functions, experimenting with how they work, or if you, like me, enjoy playing around with a live system. [If you don't need the shell, just delete everything from `-----cut here` downward.]
 
 ## Functions
 
@@ -69,11 +69,12 @@ tf.cp('log.txt','log.bak')`
    in: src-filename    file to read
        dest-filename   file to write
    returns: Null
+   except: OSError if src or dest file cannot be found/created
 ```
 
-Simply copies a source file to a destination file. Filenames may include folders or . or .. prefixes. The destination is overwritten if it exists. This function reads-&-writes one line at a time, so it can handle megabyte files. Typical speeds are 100kB/sec on an ESP8266. 
+Simply copies a source file to a destination file. Filenames may include folders or . or .. prefixes; use `/` to separate folder+filename. The destination is overwritten if it exists. This function reads-&-writes one line at a time, so it can handle megabyte files. Typical speeds are 100kB/sec on an ESP8266. 
 
-**NOTE** this function *only works on text files*. Line lengths of up to 4096 work fine on the ESP8266.
+**NOTE** this function *only works on text files* delimited by `\n`. Line lengths of up to 4096 work fine on the ESP8266.
 
 #### cat()
 
@@ -85,6 +86,7 @@ Simply copies a source file to a destination file. Filenames may include folders
         numbers     whether to prepend each line with line-number + space
         title       whether to prepend the listing with the filename
     return: Null
+    except: OSError if file cannot be found
 ```
 
 Displays the source file on the screen.  You can specify a line range, and whether line numbers are displayed, and whether to put a *title line* on the output display.  
@@ -95,6 +97,7 @@ Displays the source file on the screen.  You can specify a line range, and wheth
     dir(directory-name='')
     in:     directory-name     defaults to current directory
     return: Null
+    except: OSError if directory doesn't exist
 ```
 
 Displays the contents of the current working directory. Files and folders are marked; ownership is assumed to be `all` and all are assumed to be `rwx` (read+write+execute). The file size is also shown and the disk size summary is shown at the bottom. 
@@ -111,17 +114,19 @@ NOTE: the name is `_dir()` because `dir()` is a python builtin.
          pattern          a python regex to match
          numbers          whether to prepend a line-number + space 
     return: Null
+    except: ValueError if the pattern fails to compile as reg-ex
+        OSError if the file cannot be found
+        RunTimeError if the reg-ex parsing uses up all the memory
 ```
 
-You can search a file for a pattern, and any matching lines are displayed. 
+You can search a file for a pattern, and any matching lines are displayed. Searches are restricted to within a line, don't bother with `\r` and `\n` searches. 
 
-Searches using ^ (start of line) work fine, but searches with $ (end-of-line) aren't currently working.
-
+ 
 ###### Examples
 
 ```
 tf.grep('log.txt', '2021-03-\d\d')
-tf.grep('config.txt', 'user.\s=')
+tf.grep('config.txt', '^user\s*=')
 tf.grep('config.ini', '\[\w*\]', numbers = True)
 ```
 
@@ -131,11 +136,14 @@ tf.grep('config.ini', '\[\w*\]', numbers = True)
   sed(filename, pattern, bak_ext=".bak")
   in:  filename       the file to edit
        pattern        a sed pattern, involving one of "aidsxX"
-       bak_ext        the extension to use when creating the file backup (without the dot)
+       bak_ext        the extension to use when creating the file backup (with the dot)
   return: tuple(number of lines in the input file, number of lines modified/added/deleted/matched)
+  except: OSError     the file cannot be found, or the backup cannot be created
+     ValueError       the reg-ex pattern fails to compile
+     RunTimeError     the reg-ex parsing uses up all the memory
 ```
 
-The *sed* function is an inline file editor, based on `sed` from the Unix world. When invoked, it first renames the source file to have a `.bak` extension. That file is opened and each line of the source file is loaded in, and a regex pattern match is performed. If the line is changed/found/inserted, then the output is streamed to the new (output) file with the same name as the original; it appears to the user that the files is edited-in-place, with a .bak file created. 
+The *sed()* function is an inline file editor, based on `sed` from the Unix world. When invoked, it first renames the source file to have a `.bak` extension. That file is opened and each line of the source file is loaded in, and a regex pattern match is performed. If the line is changed/found/inserted, then the output is streamed to the new (output) file with the same name as the original; it appears to the user that the files is edited-in-place, with a .bak file created. 
 
 This version of `sed` has 6 commands:
 
@@ -146,7 +154,7 @@ This version of `sed` has 6 commands:
 * x does a grep and only saves lines that match
 * X does a grep and only saves lines that do not match
 
-If the single-letter command is preceded by a number or number-range, then the edit operation only applies to that line(s). A number range may be separated by `-` hyphen or `,` comma.
+If the single-letter command is preceded by a number or number-range, then the edit operation only applies to that line(s). A number range may be separated by `-` hyphen or `,` comma. Use `$` to indicate end-of-file.
 
 ##### Examples
 
@@ -159,7 +167,9 @@ If the single-letter command is preceded by a number or number-range, then the e
                                  with two-# and two-spaces....to align some comments
 ```
 
-The x/X patterns are wrapped in a pair of delimiter characters, typically /, although any other character is allowed (except space). Valid X commands are:
+The `i/a/d` commands should be preceeded by a line number, or range; `sed()` will *insert*, *append* or *delete* once for each line in the range. 
+ 
+The ``x/X` patterns are wrapped in a pair of delimiter characters, typically /, although any other character is allowed (except space or any of `\^$()[]`). Valid X commands are:
 
 ```
 x/abcd/
@@ -167,18 +177,20 @@ x/abcd/
 x!ratio x/y!
 ```
 
-Similarly, the s patterns are wrapped in a triplet of delimiter characters, typcially / also. Valid 's' commands are
+Similarly, the s patterns are wrapped in a triplet of delimiter characters, typcially / also. If the search pattern has `()` groups, the replace pattern can refer to them with ``\1 \2`,etc. Valid 's' commands are
 
 ```
 s/toronto/Toronto/
 s/thier/their/
-10-120s/while\s(True|False)/while 1/
+120-$s/while\s*(True|False)/while 1/
 s@ratio\s*=\s*num/denom@ratio = num/denom if denom else 0@
 ```
 
 **Note**: The function version of sed() can have embedded space characters in the pattern; the command line version (below) requires single-quotes around patterns that have space characters.
 
 **Note**: You will need some free space on your disk, the same size as the source file, as a backup file is *always* made. To edit an 800k file, you should have 800k of free space.
+
+**Note**: On error, the functions above throw exceptions. The simple shell below catches the exceptions. If you use the functions above, wrap them up in `try/except`.
 
 **Note**: The functions for
 
@@ -209,7 +221,8 @@ rmdir <dirname>
 help
 ```
 
-You can also use `copy`, `move`, `del`, `list` and `ls` as synonyms for `cp`, `mv`, `rm`, `cat` and `dir` .  The `mv` can rename directories. 
+You can also use `copy`, `move`, `del`, `list` and `ls` as synonyms for
+ `cp`, `mv`, `rm`, `cat` and `dir` .  The `mv` can rename directories. 
 
 For the `cat/list` command, you can enable line numbers with `-n` and you can limit the display range with `-l n-m` where `n` and `m` are decimal numbers (and n should be less than m). These are all valid uses of `cat`
 
@@ -220,7 +233,7 @@ cat -l 223-239 log.txt     # 17 lines
 cat -l244-$ log.txt        # from 244 to the end
 ```
 
-For `grep`  and `sed`, the patterns are *MicroPython* regular explressions, from the `re` module. If a pattern has a space character in it, then the pattern must be wrapped in  single-quote ' characters; patterns without an embedded space char can simply be typed. [The line parser is basically a `str.split()` unless a leading ' is detected.] To include a single quote in a quoted-pattern, you can escape it with \ .
+For `grep`  and `sed`, the patterns are *MicroPython* regular explressions, from the `re` module. If a pattern has a space character in it, then the pattern **must** be wrapped in  single-quote ' characters; patterns without an embedded space char can simply be typed. [The line parser is basically a `str.split()` unless a leading ' is detected.] To include a single quote in a quoted-pattern, you can escape it with ``\'` .
 
 Here are some valid uses of `sed` and `grep`
 
@@ -251,9 +264,10 @@ In its present form, the module has these limitations:
   * the target of `cp`and `mv` *cannot* be a simple a directory-name as in Linux; write the whole filename *w.r.t,* the current directory
 * the complexity of pattern matching is limited. 
   * try to format the grep patterns so they avoid deep stack recursion. For example, '([^#]|\\#)\*' has a very generous search term as the first half, and can cause deep-stack recursion. The equivalent '(\\#|[^#]\*)' is more likely to succeed.
-* with sed, lines are parsed and saved one-line-at-a-time, so pattern matching to \n and \r does not work
+* with sed, lines are parsed and saved one-line-at-a-time, so pattern matching to \n and \r does not work; sed cannot work over line boundaries
 * this simple shell is different than [mpfshell](https://github.com/wendlers/mpfshell) in that this shell runs entirely on the target device. There is no allowance in this shell for transferring files in/out of the target.
-
+* after a restart of your *MicroPython* board, you can invoke the shell with `import tf`; if you `^C` out of the shell, the second invocation of `tf` will have to be `import tf` followed by `tf.main()`, since the python interpreter caches the module and only loads it once per restart; you can intentionally restart the REPL prompt by hitting `^D` 
+ 
 ## Examples
 
 Make a simple change to a source file, perhaps modify a constant.
