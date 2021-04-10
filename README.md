@@ -169,7 +169,7 @@ If the single-letter command is preceded by a number or number-range, then the e
 
 The `i/a/d` commands should be preceeded by a line number, or range; `sed()` will *insert*, *append* or *delete* once for each line in the range. 
  
-The ``x/X` patterns are wrapped in a pair of delimiter characters, typically /, although any other character is allowed (except space or any of `\^$()[]`). Valid X commands are:
+The ``x/X` patterns are wrapped in a pair of delimiter characters, typically `/`, although almost any other character is allowed other than space or one of `\^$()[]`. Valid X commands are:
 
 ```
 x/abcd/
@@ -177,7 +177,7 @@ x/abcd/
 x!ratio x/y!
 ```
 
-Similarly, the s patterns are wrapped in a triplet of delimiter characters, typcially / also. If the search pattern has `()` groups, the replace pattern can refer to them with ``\1 \2`,etc. Valid 's' commands are
+Similarly, the s patterns are wrapped in a triplet of delimiter characters, typcially / also. If the search pattern has `()` groups, the replace pattern can refer to them with ``\1 \2`,etc. This `sed()` assumed the `g` suffix, it replaces multiple occurrences on a line. Valid 's' commands are
 
 ```
 s/toronto/Toronto/
@@ -267,6 +267,8 @@ In its present form, the module has these limitations:
 * with sed, lines are parsed and saved one-line-at-a-time, so pattern matching to \n and \r does not work; sed cannot work over line boundaries
 * this simple shell is different than [mpfshell](https://github.com/wendlers/mpfshell) in that this shell runs entirely on the target device. There is no allowance in this shell for transferring files in/out of the target.
 * after a restart of your *MicroPython* board, you can invoke the shell with `import tf`; if you `^C` out of the shell, the second invocation of `tf` will have to be `import tf` followed by `tf.main()`, since the python interpreter caches the module and only loads it once per restart; you can intentionally restart the REPL prompt by hitting `^D` 
+* for the `sed()` function and command line, the 
+[search](https://docs.micropython.org/en/latest/library/ure.html) pattern can have wildcards like ``\s`, `\w` and `\d`. The replace pattern cannot have *any* of these, and can only have `\0`, `\1`, etc
  
 ## Examples
 

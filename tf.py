@@ -43,10 +43,10 @@ def grep(filename, pattern, numbers=False):
 def sed(filename, sed_cmd, bak_ext=".bak"):
   # parse the sed_cmd
   # group 1,3 are the n-start, n-end    group 4 is command: aidsxX
-  a=re.search("^(\d*)([,-](\d+|\$))?\s*([sdaixX].*)",sed_cmd)
+  a=re.search("^(\d*)([,-](\d+|\$))?\s*([sdaixX])(.*)",sed_cmd)
   if not a:
     raise ValueError("sed() failed; pattern must be a number-range followed by one of sdaixX; no changes applied")
-  cmd=a.group(4)
+  op,args=a.group(4),a.group(5)
 
   s,e=1,1000000
   if a.group(1):
@@ -54,26 +54,25 @@ def sed(filename, sed_cmd, bak_ext=".bak"):
   if a.group(3):
     e=1000000 if a.group(3)=='$' else int(a.group(3))
 
-  op=cmd[0]
   if op in "aid" and e-s==1000000:
     raise ValueError("sed(a/i/d) should have a line number")
   #print("sed command parser of <{}> returned {} {} {}".format(op,cmd,a.group(1),a.group(3)))
   if op in "sxX":
-    if len(cmd)<2 or cmd[1] in "\^$()[]": 
-      raise ValueError("invalid sed argument: {}".format(cmd))
-    dl=cmd[1]
+    if len(args)<2 or args[0] in "\^$()[]": 
+      raise ValueError("invalid sed argument: "+op+args)
+    dl=args[0]
     if op=='s':
-      gs=re.search("s"+dl+"([^"+dl+"]*)"+dl+"([^"+dl+"]*)"+dl,cmd)
+      gs=re.search(dl+"([^"+dl+"]*)"+dl+"([^"+dl+"]*)"+dl,args)
     else:
-      gs=re.search("[xX]"+dl+"([^"+dl+"]*)"+dl,cmd)
+      gs=re.search(dl+"([^"+dl+"]*)"+dl,args)
     if not gs:
-      raise ValueError("invalid sed search pattern: {}".format(cmd))
+      raise ValueError("invalid sed search pattern: "+op+args)
     ss=gs.group(1)
     if op=='s':
       r=gs.group(2)
     sp=re.compile(ss) 
 
-  extra=a.group(4)[1:] + '\n' 
+  args=args + '\n' 
 
   try:
     os.rename(filename,filename+bak_ext)
@@ -95,7 +94,7 @@ def sed(filename, sed_cmd, bak_ext=".bak"):
           continue   # delete line
         if op=='i' and m:
           #print("insert a line before {} <{}>".format(i,extra))
-          g.write(extra)
+          g.write(args)
           h+=1
         if op in "aids":
           g.write(lin)
@@ -104,7 +103,7 @@ def sed(filename, sed_cmd, bak_ext=".bak"):
           h+=1
         if op=='a' and m:
           #print("append a line after {} <{}>".format(i,extra))       
-          g.write(extra)
+          g.write(args)
           h+=1
       #f.write("--file modifed by sed()--\n")
   return (i, h)
@@ -139,15 +138,16 @@ def _help():
   ext_cmd('help')
 
 def parseQuotedArgs(st):
+  #returns (pattern,file)
   st=st.strip()  
   if st[0]=="'":
-    p=re.search("'(.*?[^\\\\])'",st)
+    p=re.search("'(.*?[^\\\\])'\s*(\S*)",st)
     if not p:
       print("error in quoted pattern:",st)
       return 
-    return p.group(1)
+    return p.group(1),p.group(2)
   else:
-    return st.split()[0]
+    return st.split(None,1)
 
 def main():
   print("Simple shell: cp/copy mv/move rm/del cat/list cd dir/ls mkdir rmdir grep sed help")
@@ -183,9 +183,9 @@ def main():
         continue
       try:
         if op=='grep':
-          grep(rp[-1],p,numbers=True)
+          grep(p[1],p[0],numbers=True)
         else:
-          r=sed(rp[-1],p)
+          r=sed(p[1],p[0])
           if r:
             print("Lines processed: {}  Lines modifed: {}".format(*r))
       except (ValueError, OSError) as e:
@@ -216,7 +216,7 @@ def main():
       except IndexError:
         print("not enough argments; check syntax with 'help'")
       except OSError:
-        print("file/folder not found or cannot be writtencd")
+        print("file/folder not found or cannot be written")
     gc.collect()
   
 if __name__=="tf":
