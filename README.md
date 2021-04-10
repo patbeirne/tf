@@ -9,7 +9,7 @@ A module for manipulating **T**ext **F**iles in the *MicroPython* environment.
 I discovered *MicroPython* when working on the ESP8266 processor. Everything seemed very nice, except it was awkward moving files around. All the methods I could find required a back-and-forth with the programmer's desktop.
 
 This **TF** module includes functions for creating, searching, editing and making backups of local text files, using only the embedded processor. The module itself is small (about 7k) and can be downloaded into the target machine. Once there, the user can invoke it by either calling functions, or using the builtin command line. 
-```
+
 For example, to make a backup, you can call  
 
 ```
