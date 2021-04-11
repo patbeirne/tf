@@ -4,13 +4,16 @@ A module for manipulating **T**ext **F**iles in the *MicroPython* environment.
 
 [TOC]
 
+#### TL;DR
+A small app for the *MicroPython* board environment, to allow easy access to text files stored in the local flash file system.
+
 ## Oveview
 
 I discovered *MicroPython* when working on the ESP8266 processor. Everything seemed very nice, except it was awkward moving files around. All the methods I could find required a back-and-forth with the programmer's desktop.
 
-This **TF** module includes functions for creating, searching, editing and making backups of local text files, using only the embedded processor. The module itself is small (about 7k) and can be downloaded into the target machine. Once there, the user can invoke it by either calling functions, or using the builtin command line. 
-```
-For example, to make a backup, you can call  
+This **TF** module includes functions for searching, editing and making backups of local text files, using only the embedded processor. The module itself is small (about 7k) and can be downloaded into the target machine. Once there, the user can invoke it by either calling functions, or using the builtin command line. 
+
+For example, to make a backup of a file from your Python app, you can call  
 
 ```
     tf.cp('log.txt','log.2021-03-20.bak')
@@ -48,8 +51,14 @@ disk size:     392 KB   disk free: 196 KB
 
 /$ 
 ```
+Uses:
 
-The first half of the **TF** module holds the functions. With these you can  parse or search files, or make backups. 
+* make a backup copy of a file
+* examine and clean up your filesystem and its directories
+* scan a mega-byte log file for entries using the `grep`(search) or `sed` (search-and-extract) methods
+* make small changes to your Python files (change parameters, add notes, etc)
+
+The first half of the **TF** module holds the functions. You can use these as functions within your own Python code.
 
 The second half contains the simple command shell. This may come in handy for testing the functions, experimenting with how they work, or if you, like me, enjoy playing around with a live system. [If you don't need the shell, just delete everything from `-----cut here` downward.]
 
@@ -59,7 +68,10 @@ These methods all belong to the **tf** module, so you would typically invoke the
 
 ```
 import tf
-tf.cp('log.txt','log.bak')`
+try:
+  tf.cp("log.txt","log.bak")
+except:
+  print("problem copying file")
 ```
 
 #### cp()
@@ -94,7 +106,7 @@ Displays the source file on the screen.  You can specify a line range, and wheth
 #### _dir()
 
 ```
-    dir(directory-name='')
+    dir(directory-name='.')
     in:     directory-name     defaults to current directory
     return: Null
     except: OSError if directory doesn't exist
@@ -177,11 +189,11 @@ x/abcd/
 x!ratio x/y!
 ```
 
-Similarly, the s patterns are wrapped in a triplet of delimiter characters, typcially / also. If the search pattern has `()` groups, the replace pattern can refer to them with ``\1 \2`,etc. This `sed()` assumed the `g` suffix, it replaces multiple occurrences on a line. Valid 's' commands are
+Similarly, the s patterns are wrapped in a triplet of delimiter characters, typcially / also. If the search pattern has `()` groups, the replace pattern can refer to them with ``\1 \2`,etc. The /search/replace/ pattern may have a  `g` suffix, to replace replaces multiple occurrences on a line. Valid 's' commands are
 
 ```
 s/toronto/Toronto/
-s/thier/their/
+s/thier/their/g
 120-$s/while\s*(True|False)/while 1/
 s@ratio\s*=\s*num/denom@ratio = num/denom if denom else 0@
 ```
@@ -190,7 +202,11 @@ s@ratio\s*=\s*num/denom@ratio = num/denom if denom else 0@
 
 **Note**: You will need some free space on your disk, the same size as the source file, as a backup file is *always* made. To edit an 800k file, you should have 800k of free space.
 
-**Note**: On error, the functions above throw exceptions. The simple shell below catches the exceptions. If you use the functions above, wrap them up in `try/except`.
+**Note**: `sed()` errors may leave the subject-file empty, but it almost always make the backup file before failing.
+
+##### General Notes
+
+**Note**: On error, all the functions above throw exceptions. The simple shell below catches the exceptions. If you use the functions above, wrap them up in `try/except`.
 
 **Note**: The functions for
 
@@ -207,17 +223,19 @@ By invoking `tf.main()`, you will be presented a command prompt, similar to Linu
 From there, you can enter one of these commands:
 
 ```
-cat   [-n] [-l<n>-<m>] <filename>
 cp    <src-file> <dest-file>  
-dir   [<dir name>]
-grep  <pattern> <filename>
-mkdir <foldername>
-sed   <pattern> <filename>
 mv    <src-file> <dest-file>
 rm    <filename>
+
+dir   [<dir name>]
 cd    [<dest dir>]
 mkdir <dirname>
 rmdir <dirname>
+
+cat   [-n] [-l<n>-<m>] <filename>
+grep  <pattern> <filename>
+sed   <pattern> <filename>
+
 help
 ```
 
@@ -240,8 +258,8 @@ Here are some valid uses of `sed` and `grep`
 ```text
 grep #define main.c
 grep '^\s*#define\s+[A-Z]' main.c
-sed 1,100s/recieve/receive/ doc.txt
-sed '33-$s/it is/it\'s/' doc.txt
+sed 1,100s/recieve/receive/g doc.txt
+sed '33-$s/it is/it\'s/g' doc.txt
 sed '45i   a new line of indented text' doc.txt
 ```
 
@@ -254,7 +272,7 @@ Commands with invalid syntax return a line of information, and are ignored. Non 
 In its present form, the module has these limitations:  
 
 * filenames are limited to 255 chars
-* files must be text
+* file contents must be text
 	* or have a `\n` at least every 4096 characters
 	* `sed()` requires lines <=2048 characters, and this `sed()` won't match binary chars
 * search patterns involving \ escapes other than `\'` probably won't work
@@ -263,9 +281,9 @@ In its present form, the module has these limitations:
   * patterns with spaces ***must*** be quoted
   * the target of `cp`and `mv` *cannot* be a simple a directory-name as in Linux; write the whole filename *w.r.t,* the current directory
 * the complexity of pattern matching is limited. 
-  * try to format the grep patterns so they avoid deep stack recursion. For example, '([^#]|\\#)\*' has a very generous search term as the first half, and can cause deep-stack recursion. The equivalent '(\\#|[^#]\*)' is more likely to succeed.
-* with sed, lines are parsed and saved one-line-at-a-time, so pattern matching to \n and \r does not work; sed cannot work over line boundaries
-* this simple shell is different than [mpfshell](https://github.com/wendlers/mpfshell) in that this shell runs entirely on the target device. There is no allowance in this shell for transferring files in/out of the target.
+  * try to format the grep patterns so they avoid deep stack recursion. For example, `([^#]|\\#)\s*` has a very generous search term as the first half, and can cause deep-stack recursion. The equivalent `(\\#|[^#])\s*` is more likely to succeed.
+* with `sed`, lines are parsed and saved one-line-at-a-time, so pattern matching to `\n` and `\r` does not work; `sed` cannot work over line boundaries
+* this simple shell is different than [`mpfshell`](https://github.com/wendlers/mpfshell) in that this shell runs entirely on the target device. There is no allowance in this shell for transferring files in/out of the target.
 * after a restart of your *MicroPython* board, you can invoke the shell with `import tf`; if you `^C` out of the shell, the second invocation of `tf` will have to be `import tf` followed by `tf.main()`, since the python interpreter caches the module and only loads it once per restart; you can intentionally restart the REPL prompt by hitting `^D` 
 * for the `sed()` function and command line, the 
 [search](https://docs.micropython.org/en/latest/library/ure.html) pattern can have wildcards like ``\s`, `\w` and `\d`. The replace pattern cannot have *any* of these, and can only have `\0`, `\1`, etc
@@ -278,8 +296,10 @@ Make a simple change to a source file, perhaps modify a constant.
 [function]  
    tf.sed('main.py','10-30s/CITY_NAME = \'Toronto\'/CITY_NAME     = \'Ottawa\'/')  
 [command line]  
-   sed '10-30s/CITY_NAME = \'Toronto\'/CITY_NAME = \'Ottawa\'/' main.py  
-   sed 10-30s/Toronto/Ottawa/ main.py
+   /$ grep CITY main.py
+   58 CITY_NAME = 'Toronto'
+   /$ sed '58s/CITY_NAME = \'Toronto\'/CITY_NAME = \'Ottawa\'/' main.py  
+   /$ sed 58s/Toronto/Ottawa/ main.py
 ```
 
 Remove some comments from a source file.
@@ -288,7 +308,7 @@ Remove some comments from a source file.
 [function]
    tf.sed('main.py','X/^#\s*TODO:/')
 [command line]
-   sed X/^#\s*TODO:/ main.py
+   /$ sed X/^#\s*TODO:/ main.py
 ```
 
 Search a log file for an incident
@@ -297,16 +317,16 @@ Search a log file for an incident
 [function]
    tf.grep('log.txt','^2021-02-12 16:\d\d',numbers=True)
 [command line]
-   grep [Ee]rror log.txt
-   grep '2021-02-12 16:\d\d' log.txt
+   /$ grep [Ee]rror log.txt
+   /$ grep '2021-02-12 16:\d\d' log.txt
    # search and keep a record
-   cp log.txt log.details
-   sed 'x/2021-02-12 16:\d\d` log.details
+   /$ cp log.txt log.details
+   /$ sed 'x/2021-02-12 16:\d\d` log.details
 ```
 
 ## Installation
 
-~If you need help with getting connected to your MicroPython board, there are excellent howto guides here and here~ TODO! 
+~If you need help with getting connected to your *MicroPython* board, there are excellent howto guides here and here~ TODO! 
 
 Move the 'tf.py' file over to the target. You can use `webrepl` [command line program](https://github.com/micropython/webrepl)  or the **WEBREPL** [web page](http://micropython.org/webrepl/) .  If you want the command line extensions, then send over the `tf_extend.py` file as well
 
@@ -314,7 +334,7 @@ Once the module is present in the file system of the target, you can use the **R
 
 ```
  >>> import tf
-tf module loaded; members cp(), cat(), cd(), _dir(), grep() and sed()
+tf module loaded; members cp(), cat(), _dir(), grep() and sed()
 simple shell: cp/copy mv/move rm/del cat/list cd dir/ls mkdir rmdir grep sed help
 /$ 
 ```
@@ -343,12 +363,12 @@ This is the *simple command line*. You can type `dir` to get an idea of what's a
 If you don't need the *simple command line*, you can still use the methods listed at the top of this readme. Feel free to cut the `tf.py` module in half by deleting everything below the line
 
 ```
-  def ext_cmd(a):
+  -----cut here
 ```
 
 ## Extensions
 
-I found the simple command line so useful, I added some extra non-file-related functions. These are included in the optional filr `tf_extend.py'.  the available command list is extended to include
+I found the simple command line so useful, I added some extra non-file-related functions. These are included in the optional file `tf_extend.py`.  The available command list is extended to include
 
 ```
 scan                      # scan and show the local AP's

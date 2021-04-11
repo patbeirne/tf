@@ -62,7 +62,7 @@ def sed(filename, sed_cmd, bak_ext=".bak"):
       raise ValueError("invalid sed argument: "+op+args)
     dl=args[0]
     if op=='s':
-      gs=re.search(dl+"([^"+dl+"]*)"+dl+"([^"+dl+"]*)"+dl,args)
+      gs=re.search(dl+"([^"+dl+"]*)"+dl+"([^"+dl+"]*)"+dl+"(g)?",args)
     else:
       gs=re.search(dl+"([^"+dl+"]*)"+dl,args)
     if not gs:
@@ -70,6 +70,7 @@ def sed(filename, sed_cmd, bak_ext=".bak"):
     ss=gs.group(1)
     if op=='s':
       r=gs.group(2)
+      rm=0 if gs.group(3) else 1
     sp=re.compile(ss) 
 
   args=args + '\n' 
@@ -88,7 +89,7 @@ def sed(filename, sed_cmd, bak_ext=".bak"):
         if op=='s' and m:
           lin=lin[:-1]
           if sp.search(lin): h+=1
-          lin=sp.sub(r,lin)+'\n'
+          lin=sp.sub(r,lin,rm)+'\n'
         if op=='d' and m:
           h+=1
           continue   # delete line
@@ -220,7 +221,7 @@ def main():
     gc.collect()
   
 if __name__=="tf":
-  print("tf module loaded; members cp(), cat(), cd(), _dir(), grep() and sed()")
+  print("tf module loaded; members cp(), cat(), _dir(), grep() and sed()")
   main()
 
 # grep 12.*\) dmesg fails
