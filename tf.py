@@ -126,7 +126,7 @@ if 'tf_extend.py' in os.listdir():
 def _help():
   print("==Simple shell v1.2 for Text Files")
   print("  cp/copy <src-file> <dest-file>")
-  print("  mv/move <src-file> <dest-file>    \t\trm/del <file>")
+  print("  mv/move/rename <src-file> <dest-file>  \trm/del <file>")
   print("  cd [<folder>]\t\tmkdir <folder>\t\trmdir <folder>")
   print("  dir/ls [<folder>]")
   print("  cat/list [-n] [-l <n>,<m>] <file>")
@@ -208,7 +208,7 @@ def main():
           os.mkdir(rp[1])
         elif op=='rmdir':
           os.rmdir(rp[1])
-        elif op in('mv','move'):
+        elif op in('mv','move','rename'):
           os.rename(rp[1],rp[2])
         elif op in('rm','del'):
           os.remove(rp[1])

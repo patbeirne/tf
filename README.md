@@ -239,8 +239,7 @@ sed   <pattern> <filename>
 help
 ```
 
-You can also use `copy`, `move`, `del`, `list` and `ls` as synonyms for
- `cp`, `mv`, `rm`, `cat` and `dir` .  The `mv` can rename directories. 
+You can use synonyms for these: `copy = cp`, `move = rename = mv`, `del = rm`, `list = cat`, `ls = dir`. The `mv/move/rename` can rename directories. 
 
 For the `cat/list` command, you can enable line numbers with `-n` and you can limit the display range with `-l n-m` where `n` and `m` are decimal numbers (and n should be less than m). These are all valid uses of `cat`
 
@@ -378,11 +377,14 @@ host <domain.name>        # do an DNS lookup
 freq [160 | 80]           # get/set the ESP8266 frequency
 exec <python-filename>    # execute a small python file
 free                      # display the heap size: used + free
+wc <filename>             # display the line count, word count and bytes
+less <filename>           # similar to cat, but displays 30 lines at a time
 ```
+Synonyms: `ip = ifconfig`, `more = less`, `dig = nslookup = host`
 
 The `tf.py` module checks to see if the `tf_extend.py` files exists, and forwards unknown commands to it. The `help` system also extends when the extension file exists.
 
-Installing the extensions module uses about 2k of flash/disk space and 2kB of heap ram.
+Installing the extensions module uses about 3k of flash/disk space and 4kB of heap ram.
 
 ## Performance
 
