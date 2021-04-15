@@ -11,11 +11,13 @@ class wc():
     self.words += len(text.split())
 
 class lessor():
-  def __init__(self):
+  def __init__(self,nums=False):
     self.i=0
+    self.nums=nums
   def write(self,text):
     if self.i==-1: return
     self.i += 1
+    if self.nums: sys.stdout.write(str(self.i)+' ')
     sys.stdout.write(text)
     if self.i%30==0:
       sys.stdout.write("====> press <enter> to see more, N or Q to quit <====\n")
@@ -33,10 +35,14 @@ def cmd(args):
     return True
 
   if cmd in ('wc','more','less'):
+    nums=False
     if cmd=='wc':
       w = wc()
     else:
-      w = lessor()
+      if args[1]=='-n':
+        nums=True
+        del(args[1])
+      w = lessor(nums)
     try:
       tf.transfer(args[1],w)
       if cmd=='wc':
@@ -95,7 +101,7 @@ def cmd(args):
     print("  ifconfig/ip        \t\thost/dig/nslookup <domain.name>")
     print("  freq [ 160 | 80 ]  \t\texec <python-filename>")
     print("  free        \t\t\twc <filename>")
-    print("  less/more <filename>")
+    print("  less/more [-n] <filename>")
   else: # command not found
     return False
   return True  

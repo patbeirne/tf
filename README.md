@@ -378,7 +378,7 @@ freq [160 | 80]           # get/set the ESP8266 frequency
 exec <python-filename>    # execute a small python file
 free                      # display the heap size: used + free
 wc <filename>             # display the line count, word count and bytes
-less <filename>           # similar to cat, but displays 30 lines at a time
+less/more [-n] <filename> # similar to cat, but displays 30 lines at a time
 ```
 Synonyms: `ip = ifconfig`, `more = less`, `dig = nslookup = host`
 
