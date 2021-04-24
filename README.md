@@ -99,7 +99,7 @@ cat -l244-$ log.txt        # from 244 to the end
 
 For `grep`  and `sed`, the patterns are *MicroPython* regular explressions, from the `re` module. If a pattern has a space character in it, then the pattern **must** be wrapped in  single-quote ' characters; patterns without an embedded space char can simply be typed. [The line parser is basically a `str.split()` unless a leading ' is detected.] To include a single quote in a quoted-pattern, you can escape it with ``\'` .
 
-The documentation for the `sed` command is [here](#sed())
+The documentation for the `sed` command is [here](#sed)
 
 Here are some valid uses of `sed` and `grep`
 
@@ -115,7 +115,7 @@ The **REPL** typing-history is functional, so you can use the up-arrow to recall
 
 Commands with invalid syntax return a line of information, and are ignored. Non valid commands are simply eaten and ignored.
 
-## Limitations
+### Limitations
 
 In its present form, the module has these limitations:  
 
@@ -136,7 +136,7 @@ In its present form, the module has these limitations:
 * this simple shell is different than [`mpfshell`](https://github.com/wendlers/mpfshell) in that *this* shell runs entirely on the target device. There is no allowance in this shell for transferring files in/out of the target.
 * after a restart of your *MicroPython* board, you can invoke the shell with `import tf`; if you `^C` out of the shell, the second invocation of `tf` will have to be `import tf` followed by `tf.main()`, since the python interpreter caches the module and only loads it once per restart; you can intentionally restart the REPL prompt by hitting `^D` 
  
-## Examples
+### Examples
 
 Make a simple change to a source file, perhaps modify a constant.
 
@@ -216,7 +216,7 @@ If you don't need the *simple command line*, you can still use the methods liste
   -----cut here
 ```
 
-## Extensions
+### Extensions
 
 I found the simple command line so useful, I added some extra non-file-related functions. These are included in the optional file `tf_extend.py`.  The available command list is extended to include
 
@@ -266,7 +266,7 @@ except:
   print("problem copying file")
 ```
 
-#### cp()
+### cp()
 
 ```
    cp(src-filename, dest-filename)
@@ -280,7 +280,7 @@ Simply copies a source file to a destination file. Filenames may include folders
 
 **NOTE** this function *only works on text files* delimited by `\n`. Line lengths of up to 4096 work fine on the ESP8266.
 
-#### cat()
+### cat()
 
 ```
     cat(filename, first=1, last=1000000, numbers=False, title=True)
@@ -295,7 +295,7 @@ Simply copies a source file to a destination file. Filenames may include folders
 
 Displays the source file on the screen.  You can specify a line range, and whether line numbers are displayed, and whether to put a *title line* on the output display.  
 
-#### _dir()
+### _dir()
 
 ```
     dir(directory-name='.')
@@ -310,7 +310,7 @@ File dates are not displayed, as they all depend on the time from last reboot, a
 
 NOTE: the name is `_dir()` because `dir()` is a python builtin.
 
-#### grep()
+### grep()
 
 ```
     grep(filename, pattern, numbers=False)
@@ -326,7 +326,7 @@ NOTE: the name is `_dir()` because `dir()` is a python builtin.
 You can search a file for a pattern, and any matching lines are displayed. Searches are restricted to within a line, don't bother with `\r` and `\n` searches. 
 
  
-###### Examples
+#### Examples
 
 ```
 tf.grep('log.txt', '2021-03-\d\d')
@@ -334,7 +334,7 @@ tf.grep('config.txt', '^user\s*=')
 tf.grep('config.ini', '\[\w*\]', numbers = True)
 ```
 
-#### sed()
+### sed()
 
 ```
   sed(filename, pattern, bak_ext=".bak")
@@ -360,7 +360,7 @@ This version of `sed` has 6 commands:
 
 If the single-letter command is preceded by a number or number-range, then the edit operation only applies to that line(s). A number range may be separated by `-` hyphen or `,` comma. Use `$` to indicate end-of-file.
 
-##### Examples
+#### Examples
 
 ```
 12aMAX_FILE_NAME=255             insert a line AFTER line 12
@@ -396,7 +396,7 @@ s@ratio\s*=\s*num/denom@ratio = num/denom if denom else 0@
 
 **Note**: `sed()` errors may leave the subject-file empty, but it almost always make the backup file before failing.
 
-#### General Notes
+### General Notes
 
 **Note**: On error, all the functions above throw exceptions. The simple command line shell above catches the exceptions. If you use the functions, wrap them up in `try/except`.
 
