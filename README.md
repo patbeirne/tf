@@ -373,7 +373,7 @@ If the single-letter command is preceded by a number or number-range, then the e
 
 The `i/a/d` commands should be preceeded by a line number, or range; `sed()` will *insert*, *append* or *delete* once for each line in the range. 
  
-The ``x/X` patterns are wrapped in a pair of delimiter characters, typically `/`, although almost any other character is allowed other than space or one of `\^$()[]`. Valid X commands are:
+The `x/X` patterns are wrapped in a pair of delimiter characters, typically `/`, although almost any other character is allowed other than space or one of `\^$()[]`. Valid X commands are:
 
 ```
 x/abcd/
@@ -381,7 +381,7 @@ x/abcd/
 x!ratio x/y!
 ```
 
-Similarly, the s patterns are wrapped in a triplet of delimiter characters, typcially / also. If the search pattern has `()` groups, the replace pattern can refer to them with ``\1 \2`,etc. The /search/replace/ pattern may have a  `g` suffix, to replace replaces multiple occurrences on a line. Valid 's' commands are
+Similarly, the `s` patterns are wrapped in a triplet of delimiter characters, typcially `/` also. If the search pattern has `()` groups, the replace pattern can refer to them with `\1 \2`,etc. The /search/replace/ pattern may have a  `g` suffix, to replace replaces multiple occurrences on a line. Valid 's' commands are
 
 ```
 s/toronto/Toronto/
