@@ -85,7 +85,7 @@ def sed(filename, sed_cmd, bak_ext=".bak"):
     with open(filename,'w') as g:
       for lin in f:
         i=i+1
-        m=(i>=s and i<=e)
+        m=(s <= i <= e)
         if op=='s' and m:
           lin=lin[:-1]
           if sp.search(lin): h+=1
