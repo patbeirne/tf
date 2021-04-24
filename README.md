@@ -65,7 +65,7 @@ The second half of the module's code contains the simple command shell. [If you 
 
 ## Simple Command Line
 
-By invoking `tf.main(), you will be presented a command prompt, similar to Linux, where the prompt shows you what directory/folder you are currently in, and a '$'. 
+By invoking `tf.main()`, you will be presented a command prompt, similar to Linux, where the prompt shows you what directory/folder you are currently in, and a '$'. 
 
 From there, you can enter one of these commands:
 
@@ -98,6 +98,8 @@ cat -l244-$ log.txt        # from 244 to the end
 ```
 
 For `grep`  and `sed`, the patterns are *MicroPython* regular explressions, from the `re` module. If a pattern has a space character in it, then the pattern **must** be wrapped in  single-quote ' characters; patterns without an embedded space char can simply be typed. [The line parser is basically a `str.split()` unless a leading ' is detected.] To include a single quote in a quoted-pattern, you can escape it with ``\'` .
+
+The documentation for the `sed` command is [here](#sed())
 
 Here are some valid uses of `sed` and `grep`
 
