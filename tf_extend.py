@@ -1,4 +1,4 @@
-import os,sys,network,socket,time,machine,gc,tf
+import os,sys,network,socket,time,machine,gc,tf,btree
 
 # these helper classes let us use the tf.transfer() iterator,
 # by intercepting the .write()
@@ -81,12 +81,33 @@ def cmd(args):
       print("ch: {}\tRSSI: {}\t{}\tSSID: {}".format(i[2],i[3],"open" if i[4]==0 else "",i[0]))
 
   elif cmd=='freq':
-    if len(args)==1 or args[1] in ("160","80"):
+    # identify esp32 or esp8266
+    try:  # is this esp8266
+      machine.TouchPad
+      freqs=("160","80","240")
+    except AttributeError:
+      freqs=("160","80")
+    if len(args)==1 or args[1] in freqs:
       if len(args)>1:
         machine.freq(int(args[1])*1000000)
       print("master cpu frequency {}MHz".format(machine.freq()//1000000))
     else:
-      print("syntax: freq [ 160 | 80 ]")
+      print("syntax: freq [ 160 | 80 | 240 ] ")
+
+  elif cmd=='btree':
+    try:
+      f=open(args[1])
+      b=btree.open(f)
+      print("Key\t\tValue")
+      i=0
+      for w in b:
+        print("{}\t{}".format(w,b[w]))
+        i+=1
+        if i%30==0:
+          r=input("continue? ")
+          if r=='n': break
+    except OSError:
+      print("file not found or is not a btree database")
 
   elif cmd=='exec':
     try:
@@ -99,9 +120,10 @@ def cmd(args):
     print("==Extended commands")
     print("  connect <essid> <password> \tscan")
     print("  ifconfig/ip        \t\thost/dig/nslookup <domain.name>")
-    print("  freq [ 160 | 80 ]  \t\texec <python-filename>")
+    print("  freq [160 | 80 | 240]\texec <python-filename>")
     print("  free        \t\t\twc <filename>")
     print("  less/more [-n] <filename>")
+    print("  bt-list <filename>")
   else: # command not found
     return False
   return True  

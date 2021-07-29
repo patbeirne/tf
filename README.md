@@ -122,13 +122,12 @@ In its present form, the module has these limitations:
 * filenames are limited to 255 chars
 * file contents must be text
 	* or have a `\n` at least every 4096 characters
-	* `sed()` requires lines <=2048 characters, and this `sed()` won't match binary chars
+	* `sed()` requires lines <=2048 characters, and this `sed()` will not match binary chars
 * in the simple shell
   * filenames must not have spaces
   * patterns with spaces ***must*** be quoted
-  * the target of `cp` and `mv` *cannot* be a simple a directory-name as in Linux; write the whole filename *w.r.t,* the current directory
-* for the `sed` function and command, the 
-[search](https://docs.micropython.org/en/latest/library/ure.html) pattern can have wildcards like ``\s`, `\w` and `\d`. The replace pattern cannot have *any* of these, and can only have `\0`, `\1`, etc
+  * the target of `cp` and `mv` *cannot* be a simple a directory-name as in Linux; write the whole filename *w.r.t* the current directory
+* for the `sed` function and command, the [search](https://docs.micropython.org/en/latest/library/ure.html) pattern can have wildcards like ``\s`, `\w` and `\d`. The replace pattern cannot have *any* of these, and can only have `\0`, `\1`, etc
   * search patterns involving \ escapes other than those and `\'` probably won't work
 * the complexity of pattern matching is limited. 
   * try to format the grep patterns so they avoid deep stack recursion. For example, `([^#]|\\#)\s*` has a very generous search term as the first half, and can cause deep-stack recursion. The equivalent `(\\#|[^#])\s*` is more likely to succeed.
@@ -230,6 +229,7 @@ exec <python-filename>    # execute a small python file
 free                      # display the heap size: used + free
 wc <filename>             # display the line count, word count and bytes
 less/more [-n] <filename> # similar to cat, but displays 30 lines at a time
+btree <filename>          # display the content of a BTREE database
 ```
 Synonyms: `ip = ifconfig`, `more = less`, `dig = nslookup = host`
 
