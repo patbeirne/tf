@@ -33,7 +33,7 @@ def cp(src,dest):
 
 def cat(filename, first=1, last=1000000, numbers=False, title=True):
   if title:
-    print(f"===={filename}====")
+    print("===={}====".format(filename))
   transfer(filename,sys.stdout,first,last,numbers=numbers)
 
 def grep(filename, pattern, numbers=False):
@@ -56,7 +56,7 @@ def sed(filename, sed_cmd, bak_ext=".bak"):
 
   if op in "aid" and e-s==1000000:
     raise ValueError("sed(a/i/d) should have a line number")
-  #print(f"sed command parser of <{op}> returned {cmd} {a.group(1)} {a.group(3)}")
+  #print("sed command parser of <{}> returned {} {} {}".format(op, cmd, a.group(1), a.group(3)))
   if op in "sxX":
     if len(args)<2 or args[0] in "\^$()[]": 
       raise ValueError("invalid sed argument: "+op+args)
@@ -94,7 +94,7 @@ def sed(filename, sed_cmd, bak_ext=".bak"):
           h+=1
           continue   # delete line
         if op=='i' and m:
-          #print(f"insert a line before {i} <{extra}>")
+          #print("insert a line before {} <{}>".format(i,extra))
           g.write(args)
           h+=1
         if op in "aids":
@@ -103,7 +103,7 @@ def sed(filename, sed_cmd, bak_ext=".bak"):
           g.write(lin)
           h+=1
         if op=='a' and m:
-          #print(f"append a line after {i} <{extra}>")
+          #print("append a line after {} <{}>".format(i,extra))
           g.write(args)
           h+=1
       #f.write("--file modifed by sed()--\n")
@@ -112,9 +112,9 @@ def sed(filename, sed_cmd, bak_ext=".bak"):
 def _dir(d='.'):
   for f in os.listdir(d):
     s=os.stat(d+'/'+f)
-    print(f"{'d' if (s[0] & 0x4000) else '-'}rwx all {s[6]:9d} {f}")
+    print("{}rwx all {:9d} {}".format('d' if (s[0] & 0x4000) else '-',s[6],f ))
   s=os.statvfs('/')
-  print(f"disk size:{s[0]*s[2]//1024:8d} KB   disk free: {s[0]*s[3]//1024} KB")
+  print("disk size:{:8d} KB   disk free: {} KB".format(s[0]*s[2]//1024,s[0]*s[3]//1024))
 
 '''-----cut here if you only need the functions-----'''
 def ext_cmd(a):
@@ -132,7 +132,7 @@ def _help():
   print("  cat/list [-n] [-l <n>,<m>] <file>")
   print("  grep <pattern> <file>")
   print("  sed <pattern> <file>")
-  print("      pattern is <line-range><op><extra>   e.g'a/search/replace/', 'x!TODO:!', '43,49d', '8itext'")
+  print("      pattern is <line-range><op><extra>   eg: 's/search/replace/' 'x!TODO:!' '43,49d' '8itext'")
   print("      patterns with spaces require '-quotes\tsed ops are one of s/d/i/a/x/X")
   print("      sed cannot cross line boundaries\t\tsed s/x/X-patterns: non-/ delimiters are ok")
   print("file names must NOT have embedded spaces\toptions must be early on the command line")
@@ -188,7 +188,7 @@ def main():
         else:
           r=sed(p[1],p[0])
           if r:
-            print(f"Lines processed: {r[0]}  Lines modifed: {r[1]}")
+            print("Lines processed: {}  Lines modifed: {}".format(*r))
       except (ValueError, OSError) as e:
         print(e)
       except RuntimeError:

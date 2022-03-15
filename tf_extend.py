@@ -4,11 +4,11 @@ import os,sys,network,socket,time,machine,gc,tf,btree
 # by intercepting the .write()
 class wc():
   def __init__(self):
-    self.words=self.lines=self.bytes_=0
+    self.c = [0,0,0] # lines, words & bytes
   def write(self,text):
-    self.bytes_ += len(text)
-    self.lines += 1
-    self.words += len(text.split())
+    self.c[2] += len(text)
+    self.c[0] += 1
+    self.c[1] += len(text.split())
 
 class lessor():
   def __init__(self,nums=False):
@@ -46,20 +46,20 @@ def cmd(args):
     try:
       tf.transfer(args[1],w)
       if cmd=='wc':
-        print(f"lines: {w.lines}\twords: {w.words}\tbytes: {w.bytes_}")
+        print("lines: {}\twords: {}\tbytes: {}".format(*w.c))
     except:
       print("file not found: "+args[1])
 
   elif cmd in ('ifconfig','ip'):
     ifc=network.WLAN().ifconfig()
-    print(f"IP: {ifc[0]}\tmask: {ifc[1]}\tgateway: {ifc[2]}\tDNS: {ifc[3]}")
+    print("IP: {}\tmask: {}\tgateway: {}\tDNS: {}".format(*ifc))
 
   elif cmd in ('host','nslookup','dig'):
     if len(args)<2:
       print("syntax: host <domain.name>")
     else:
       try:
-        print(f"host <{args[1]}> is at {socket.getaddrinfo(args[1],80)[0][-1][0]}")
+        print("host <{}> is at {}".format(args[1],socket.getaddrinfo(args[1],80)[0][-1][0]))
       except:
         print("network/DNS not available")
 
@@ -81,7 +81,7 @@ def cmd(args):
       print("no AP found")
       return True
     for i in s:
-      print(f"ch: {i[2]}\tRSSI: {i[3]}\t{"open" if i[4]==0 else ""}\tSSID: {i[0]}")
+      print("ch: {}\tRSSI: {}\t{}\tSSID: {}".format(i[2],i[3],"open" if i[4]==0 else "",i[0]))
 
   elif cmd=='freq':
     # identify esp32 or esp8266
@@ -93,7 +93,7 @@ def cmd(args):
     if len(args)==1 or args[1] in freqs:
       if len(args)>1:
         machine.freq(int(args[1])*1000000)
-      print(f"master cpu frequency {machine.freq()//1000000}MHz")
+      print("master cpu frequency {}MHz".format(machine.freq()//1000000))
     else:
       print("syntax: freq [ 160 | 80 | 240 ] ")
 
@@ -104,7 +104,7 @@ def cmd(args):
       print("Key\t\tValue")
       i=0
       for k,v in b.items():
-        print(f"{k:10}\t{v}")
+        print("{:10}\t{}".format(k,v))
         i+=1
         if i%30==0:
           r=input("continue? ")
@@ -118,7 +118,7 @@ def cmd(args):
     except OSError:
       print("file not found")
   elif cmd=='free':
-    print(f"memory used: {gc.mem_alloc()}\tmemory free:{gc.mem_free()}")
+    print("memory used: {}\tmemory free:{}".format(gc.mem_alloc(),gc.mem_free()))
   elif cmd=='help':
     print("==Extended commands")
     print("  connect <essid> <password> \tscan")
