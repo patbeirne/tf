@@ -33,7 +33,7 @@ def cp(src,dest):
 
 def cat(filename, first=1, last=1000000, numbers=False, title=True):
   if title:
-    print("===={}====".format(filename))
+    print(f"===={filename}====")
   transfer(filename,sys.stdout,first,last,numbers=numbers)
 
 def grep(filename, pattern, numbers=False):
@@ -56,7 +56,7 @@ def sed(filename, sed_cmd, bak_ext=".bak"):
 
   if op in "aid" and e-s==1000000:
     raise ValueError("sed(a/i/d) should have a line number")
-  #print("sed command parser of <{}> returned {} {} {}".format(op,cmd,a.group(1),a.group(3)))
+  #print(f"sed command parser of <{op}> returned {cmd} {a.group(1)} {a.group(3)}")
   if op in "sxX":
     if len(args)<2 or args[0] in "\^$()[]": 
       raise ValueError("invalid sed argument: "+op+args)
@@ -94,7 +94,7 @@ def sed(filename, sed_cmd, bak_ext=".bak"):
           h+=1
           continue   # delete line
         if op=='i' and m:
-          #print("insert a line before {} <{}>".format(i,extra))
+          #print(f"insert a line before {i} <{extra}>")
           g.write(args)
           h+=1
         if op in "aids":
@@ -103,7 +103,7 @@ def sed(filename, sed_cmd, bak_ext=".bak"):
           g.write(lin)
           h+=1
         if op=='a' and m:
-          #print("append a line after {} <{}>".format(i,extra))       
+          #print(f"append a line after {i} <{extra}>")
           g.write(args)
           h+=1
       #f.write("--file modifed by sed()--\n")
@@ -112,9 +112,9 @@ def sed(filename, sed_cmd, bak_ext=".bak"):
 def _dir(d='.'):
   for f in os.listdir(d):
     s=os.stat(d+'/'+f)
-    print("{}rwx all {:9d} {}".format('d' if (s[0] & 0x4000) else '-',s[6],f))
+    print(f"{'d' if (s[0] & 0x4000) else '-'}rwx all {s[6]:9d} {f}")
   s=os.statvfs('/')
-  print("disk size:{:8d} KB   disk free: {} KB".format(s[0]*s[2]//1024,s[0]*s[3]//1024))
+  print(f"disk size:{s[0]*s[2]//1024:8d} KB   disk free: {s[0]*s[3]//1024} KB")
 
 '''-----cut here if you only need the functions-----'''
 def ext_cmd(a):
@@ -188,7 +188,7 @@ def main():
         else:
           r=sed(p[1],p[0])
           if r:
-            print("Lines processed: {}  Lines modifed: {}".format(*r))
+            print(f"Lines processed: {r[0]}  Lines modifed: {r[1]}")
       except (ValueError, OSError) as e:
         print(e)
       except RuntimeError:
@@ -223,5 +223,3 @@ def main():
 if __name__=="tf":
   print("tf module loaded; members cp(), cat(), _dir(), grep() and sed()")
   main()
-
-# grep 12.*\) dmesg fails
