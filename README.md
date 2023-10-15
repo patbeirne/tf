@@ -7,6 +7,8 @@ A module for manipulating **T**ext **F**iles in the *MicroPython* environment.
 #### TL;DR
 A small app for the *MicroPython* board environment, to allow easy access to text files stored in the local flash file system.
 
+*Tested on **1.21** and everything works properly*
+
 ## Oveview
 
 I discovered *MicroPython* when working on the ESP8266 processor. Everything seemed very nice, except it was awkward moving files around. All the methods I could find required a back-and-forth with the programmer's desktop.
